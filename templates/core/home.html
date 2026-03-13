@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Início | PersonalSpace{% endblock %}
+{% block header %}Início{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>Bem-vindo</h2>
+    <p>Escolhe um módulo no menu lateral.</p>
+  </div>
+
+  <div class="grid">
+    <a class="tile" href="/dashboard/">Dashboard</a>
+    <a class="tile" href="/finance/">Financeiro</a>
+    <a class="tile" href="/health/">Saúde</a>
+    <a class="tile" href="/shopping/">Compras</a>
+  </div>
+{% endblock %}

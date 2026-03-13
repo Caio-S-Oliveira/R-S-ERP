@@ -1,0 +1,113 @@
+{% load socialaccount static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar | PersonalSpace</title>
+
+    <link rel="stylesheet" href="{% static 'css/auth/login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-bg">
+        <span class="blob blob--one"></span>
+        <span class="blob blob--two"></span>
+        <span class="blob blob--three"></span>
+    </div>
+
+    <main class="login-wrapper">
+        <section class="login-shell">
+            <div class="login-logo">
+                <img src="{% static 'img/logo-animated.svg' %}" alt="PersonalSpace">
+                <h1>PersonalSpace</h1>
+            </div>
+
+            <div class="login-card">
+                <span class="login-badge">Acesse sua conta</span>
+
+                <h2>Entrar</h2>
+                <p>Use seu usuário e senha ou continue com Google.</p>
+
+                {% if form.errors %}
+                    <div class="login-message login-message--error">
+                        Usuário ou senha inválidos. Confere aí sem inventar moda.
+                    </div>
+                {% endif %}
+
+                {% if messages %}
+                    <div class="login-messages">
+                        {% for message in messages %}
+                            <div class="login-message">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'account_login' %}" class="login-form">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="id_login">E-mail</label>
+                        <div class="input-wrap">
+                            <i class="fa-regular fa-user"></i>
+                            <input
+                                type="email"
+                                name="login"
+                                id="id_login"
+                                placeholder="Digite seu e-mail"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password">Senha</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-lock"></i>
+                            <input
+                                type="password"
+                                name="password"
+                                id="id_password"
+                                placeholder="Digite sua senha"
+                                autocomplete="current-password"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember">
+                            <span>Lembrar de mim</span>
+                        </label>
+
+                        <a href="{% url 'account_reset_password' %}" class="forgot-link">
+                            Esqueci a senha
+                        </a>
+                    </div>
+
+                    {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+                    {% endif %}
+
+                    <button type="submit" class="login-submit-btn">
+                        Entrar
+                    </button>
+                </form>
+
+                <div class="login-divider">
+                    <span>ou</span>
+                </div>
+
+                <a class="google-btn" href="{% provider_login_url 'google' %}">
+                    <span class="google-btn__icon">
+                        <i class="fa-brands fa-google"></i>
+                    </span>
+                    <span>Continuar com Google</span>
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

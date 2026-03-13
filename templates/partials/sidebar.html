@@ -1,0 +1,36 @@
+{% load static %}
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <h2>Personal<span>Space</span></h2>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="{% url 'home' %}"
+           class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="fa-solid fa-table-columns"></i> Dashboard
+        </a>
+
+        <a href="{% url 'apps.finance' %}"
+           class="{% if request.resolver_match.url_name == 'apps.finance' %}active{% endif %}">
+            <i class="fa-solid fa-wallet"></i> Finanças
+        </a>
+
+        <a href="{% url 'apps.health' %}"
+           class="{% if request.resolver_match.url_name == 'apps.health' %}active{% endif %}">
+            <i class="fa-solid fa-heart-pulse"></i> Saúde
+        </a>
+
+        <a href="{% url 'apps.shopping' %}"
+           class="{% if request.resolver_match.url_name == 'apps.shopping' %}active{% endif %}">
+            <i class="fa-solid fa-cart-shopping"></i> Compras
+        </a>
+
+        <a href="{% url 'user_profile' %}" 
+            class="topbar__icon-btn" title="Perfil">
+            <i class="fa-regular fa-user"></i>
+        </a>
+
+    </nav>
+</aside>

@@ -1,0 +1,17 @@
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fa-solid fa-calendar-days"></i> Agenda & Tarefas</h3>
+    </div>
+
+    <div class="card-body">
+        <ul class="task-list">
+            {% for task in tasks %}
+                <li>{{ task.titulo }}</li>
+            {% empty %}
+                <li>Nenhuma tarefa cadastrada.</li>
+            {% endfor %}
+        </ul>
+
+        <button class="btn">Nova tarefa</button>
+    </div>
+</div>

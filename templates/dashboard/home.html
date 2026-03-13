@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | PersonalSpace{% endblock %}
+
+{% block content %}
+<section class="dashboard-grid">
+    {% include "partials/dashboard/finance_card.html" %}
+    {% include "partials/dashboard/health_card.html" %}
+    {% include "partials/dashboard/shopping_card.html" %}
+    {% include "partials/dashboard/tasks_card.html" %}
+</section>
+{% endblock %}

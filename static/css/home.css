@@ -1,0 +1,11 @@
+@import url("./globals/variables.css");
+@import url("./globals/reset.css");
+@import url("./globals/layout.css");
+
+@import url("./components/sidebar.css");
+@import url("./components/topbar.css");
+@import url("./components/card.css");
+@import url("./components/button.css");
+
+@import url("./pages/profile.css");
+@import url("./pages/dashboard.css");
