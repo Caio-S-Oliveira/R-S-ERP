@@ -3,40 +3,10 @@
 <header class="topbar">
     <div class="topbar__content">
         <div class="topbar__welcome">
-            <span class="topbar__eyebrow">Bem-vindo de volta</span>
-            <h1 class="topbar__title">
-                Olá, {{ request.user.first_name|default:request.user.username }}!
-            </h1>
+            <span class="topbar__eyebrow">Bem-vindo de volta {{ request.user.first_name|default:request.user.username }}!</span>
             <p class="topbar__subtitle">
                 Organize sua rotina, finanças, saúde e tarefas em um só lugar.
             </p>
-        </div>
-
-        <div class="topbar__profile">
-            <div class="topbar__profile-main">
-                <div class="topbar__avatar">
-                    {% if request.user.socialaccount_set.all.0.get_avatar_url %}
-                        <img src="{{ request.user.socialaccount_set.all.0.get_avatar_url }}" alt="Foto do usuário">
-                    {% else %}
-                        <img src="{% static 'img/default-user.png' %}" alt="Foto do usuário">
-                    {% endif %}
-                </div>
-
-                <div class="topbar__user-info">
-                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
-                    <span>{{ request.user.email }}</span>
-                </div>
-            </div>
-
-            <div class="topbar__actions">
-                <a href="#" class="topbar__icon-btn" title="Perfil">
-                    <i class="fa-regular fa-user"></i>
-                </a>
-
-                <a href="{% url 'account_logout' %}" class="topbar__icon-btn" title="Sair">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </a>
-            </div>
         </div>
     </div>
 </header>

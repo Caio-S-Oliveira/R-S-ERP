@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">Finanças</h1>
+            <p class="text-muted mb-0">Resumo das suas movimentações financeiras.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">
+                Ver lançamentos
+            </a>
+            <a href="{% url 'transaction_create' %}" class="btn btn-primary">
+                Nova transação
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- TOTALIZADORES -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-3">
+            <div class="row g-3 text-center">
+                <div class="col-md-4">
+                    <div class="border rounded-3 py-2 px-3 h-100">
+                        <div class="text-muted small mb-1">Saldo atual</div>
+                        <div class="fs-5 fw-bold">R$ {{ balance|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="border rounded-3 py-2 px-3 h-100">
+                        <div class="text-muted small mb-1">Receitas</div>
+                        <div class="fs-5 fw-bold text-success">R$ {{ income_total|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="border rounded-3 py-2 px-3 h-100">
+                        <div class="text-muted small mb-1">Despesas</div>
+                        <div class="fs-5 fw-bold text-danger">R$ {{ expense_total|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h2 class="h6 mb-0">Evolução mensal de receitas x despesas</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyFlowChart" height="95"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h2 class="h6 mb-0">Despesas por categoria</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="expenseCategoryChart" height="130"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h2 class="h6 mb-0">Saldo por conta</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="accountBalanceChart" height="130"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÚLTIMAS TRANSAÇÕES -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Últimas transações</h2>
+            <a href="{% url 'transaction_list' %}" class="btn btn-sm btn-outline-secondary">
+                Ver tudo
+            </a>
+        </div>
+
+        <div class="card-body">
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Conta</th>
+                                <th>Tipo</th>
+                                <th class="text-end">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in transactions %}
+                                <tr>
+                                    <td>{{ item.date|date:"d/m/Y" }}</td>
+                                    <td>{{ item.description }}</td>
+                                    <td>{{ item.category.name }}</td>
+                                    <td>{{ item.account.name }}</td>
+                                    <td>
+                                        {% if item.type == "income" %}
+                                            <span class="badge text-bg-success">Receita</span>
+                                        {% else %}
+                                            <span class="badge text-bg-danger">Despesa</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end fw-semibold">
+                                        {% if item.type == "income" %}
+                                            <span class="text-success">R$ {{ item.amount|floatformat:2 }}</span>
+                                        {% else %}
+                                            <span class="text-danger">R$ {{ item.amount|floatformat:2 }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    Nenhuma transação cadastrada ainda.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ monthly_labels|json_script:"monthly-labels" }}
+{{ monthly_income_data|json_script:"monthly-income-data" }}
+{{ monthly_expense_data|json_script:"monthly-expense-data" }}
+
+{{ expense_category_labels|json_script:"expense-category-labels" }}
+{{ expense_category_data|json_script:"expense-category-data" }}
+
+{{ account_balance_labels|json_script:"account-balance-labels" }}
+{{ account_balance_data|json_script:"account-balance-data" }}
+
+<script>
+    const monthlyLabels = JSON.parse(document.getElementById("monthly-labels").textContent);
+    const monthlyIncomeData = JSON.parse(document.getElementById("monthly-income-data").textContent);
+    const monthlyExpenseData = JSON.parse(document.getElementById("monthly-expense-data").textContent);
+
+    const expenseCategoryLabels = JSON.parse(document.getElementById("expense-category-labels").textContent);
+    const expenseCategoryData = JSON.parse(document.getElementById("expense-category-data").textContent);
+
+    const accountBalanceLabels = JSON.parse(document.getElementById("account-balance-labels").textContent);
+    const accountBalanceData = JSON.parse(document.getElementById("account-balance-data").textContent);
+
+    const monthlyFlowCtx = document.getElementById("monthlyFlowChart");
+    if (monthlyFlowCtx) {
+        new Chart(monthlyFlowCtx, {
+            type: "line",
+            data: {
+                labels: monthlyLabels,
+                datasets: [
+                    {
+                        label: "Receitas",
+                        data: monthlyIncomeData,
+                        tension: 0.3,
+                        fill: false
+                    },
+                    {
+                        label: "Despesas",
+                        data: monthlyExpenseData,
+                        tension: 0.3,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    const expenseCategoryCtx = document.getElementById("expenseCategoryChart");
+    if (expenseCategoryCtx) {
+        new Chart(expenseCategoryCtx, {
+            type: "bar",
+            data: {
+                labels: expenseCategoryLabels,
+                datasets: [{
+                    label: "Despesas",
+                    data: expenseCategoryData
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    const accountBalanceCtx = document.getElementById("accountBalanceChart");
+    if (accountBalanceCtx) {
+        new Chart(accountBalanceCtx, {
+            type: "bar",
+            data: {
+                labels: accountBalanceLabels,
+                datasets: [{
+                    label: "Saldo estimado",
+                    data: accountBalanceData
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

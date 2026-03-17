@@ -12,8 +12,8 @@
             <i class="fa-solid fa-table-columns"></i> Dashboard
         </a>
 
-        <a href="{% url 'apps.finance' %}"
-           class="{% if request.resolver_match.url_name == 'apps.finance' %}active{% endif %}">
+        <a href="{% url 'finance_home' %}"
+           class="{% if request.resolver_match.url_name == 'finance_home' %}active{% endif %}">
             <i class="fa-solid fa-wallet"></i> Finanças
         </a>
 
@@ -22,15 +22,18 @@
             <i class="fa-solid fa-heart-pulse"></i> Saúde
         </a>
 
-        <a href="{% url 'apps.shopping' %}"
-           class="{% if request.resolver_match.url_name == 'apps.shopping' %}active{% endif %}">
+        <a href="{% url 'shopping_list_list' %}"
+           class="{% if request.resolver_match.url_name == 'shopping_list_list' %}active{% endif %}">
             <i class="fa-solid fa-cart-shopping"></i> Compras
         </a>
 
         <a href="{% url 'user_profile' %}" 
-            class="topbar__icon-btn" title="Perfil">
-            <i class="fa-regular fa-user"></i>
+            class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}" >
+            <i class="fa-regular fa-user"></i> {{ request.user.get_display_name }}
         </a>
 
+        <a href="{% url 'account_logout' %}" title="Sair">
+            <i class="fa-solid fa-right-from-bracket"></i> Sair
+        </a>
     </nav>
 </aside>

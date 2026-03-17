@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">{{ shopping_list.name }}</h1>
+            <p class="text-muted mb-0">{{ shopping_list.description|default:"Sem descrição" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'shopping_item_create' shopping_list.pk %}" class="btn btn-primary">
+                Novo item
+            </a>
+            <a href="{% url 'shopping_list_update' shopping_list.pk %}" class="btn btn-outline-secondary">
+                Editar lista
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <div class="text-muted small mb-1">Itens</div>
+                    <div class="fs-5 fw-bold">{{ total_items }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <div class="text-muted small mb-1">Comprados</div>
+                    <div class="fs-5 fw-bold text-success">{{ bought_items }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <div class="text-muted small mb-1">Aguardando promoção</div>
+                    <div class="fs-5 fw-bold text-warning">{{ waiting_items }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <div class="text-muted small mb-1">Valor desejado</div>
+                    <div class="fs-5 fw-bold">R$ {{ desired_total|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+            <h2 class="h5 mb-0">Itens da lista</h2>
+        </div>
+        <div class="card-body">
+            {% if items %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Categoria</th>
+                                <th>Loja</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                                <th>Qtd</th>
+                                <th>Preço desejado</th>
+                                <th>Preço atual</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ item.name }}</div>
+                                        {% if item.notes %}
+                                            <div class="small text-muted">{{ item.notes|truncatechars:60 }}</div>
+                                        {% endif %}
+                                        {% if item.product_url %}
+                                            <div class="mt-1">
+                                                <a href="{{ item.product_url }}" target="_blank" class="small text-decoration-none">
+                                                    Abrir link
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.get_category_display }}</td>
+                                    <td>{{ item.store_name|default:"-" }}</td>
+                                    <td>{{ item.get_status_display }}</td>
+                                    <td>{{ item.get_priority_display }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>
+                                        {% if item.desired_price %}
+                                            R$ {{ item.desired_price|floatformat:2 }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.current_price %}
+                                            R$ {{ item.current_price|floatformat:2 }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end flex-wrap gap-1">
+                                            <a href="{% url 'shopping_item_change_status' item.pk 'bought' %}" class="btn btn-sm btn-outline-success">
+                                                Comprado
+                                            </a>
+                                            <a href="{% url 'shopping_item_change_status' item.pk 'waiting' %}" class="btn btn-sm btn-outline-warning">
+                                                Promoção
+                                            </a>
+                                            <a href="{% url 'shopping_item_update' item.pk %}" class="btn btn-sm btn-outline-secondary">
+                                                Editar
+                                            </a>
+                                            <a href="{% url 'shopping_item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">
+                                                Excluir
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    Nenhum item cadastrado nesta lista.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

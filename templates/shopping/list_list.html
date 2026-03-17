@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Listas de compras</h1>
+            <p class="text-muted mb-0">Organize produtos, links e compras planejadas.</p>
+        </div>
+        <a href="{% url 'shopping_list_create' %}" class="btn btn-primary">
+            Nova lista
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-3">
+        {% for item in lists %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-1">{{ item.name }}</h2>
+                        <p class="text-muted small mb-3">{{ item.description|default:"Sem descrição" }}</p>
+
+                        <div class="small text-muted mb-3">
+                            {{ item.items_count }} item(ns)
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'shopping_list_detail' item.pk %}" class="btn btn-sm btn-primary">
+                                Abrir
+                            </a>
+                            <a href="{% url 'shopping_list_update' item.pk %}" class="btn btn-sm btn-outline-secondary">
+                                Editar
+                            </a>
+                            <a href="{% url 'shopping_list_delete' item.pk %}" class="btn btn-sm btn-outline-danger">
+                                Excluir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5 text-muted">
+                        Nenhuma lista cadastrada ainda.
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

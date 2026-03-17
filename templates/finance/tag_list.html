@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Tags</h1>
+            <p class="text-muted mb-0">Gerencie suas tags para organização.</p>
+        </div>
+        <a href="{% url 'tag_create' %}" class="btn btn-primary">Nova tag</a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            {% if tags %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in tags %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'tag_update' item.pk %}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                                        <a href="{% url 'tag_delete' item.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-muted">Nenhuma tag cadastrada.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

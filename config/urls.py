@@ -11,5 +11,5 @@ urlpatterns = [
     path("shopping/", include("apps.shopping.urls")),
     path("dashboard/", include("apps.dashboard.urls")),
     path("core/", include("apps.core.urls")),
-    path("",  home, name="home")
+    path("", home, name="home"),
 ]
