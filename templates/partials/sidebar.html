@@ -17,8 +17,8 @@
             <i class="fa-solid fa-wallet"></i> Finanças
         </a>
 
-        <a href="{% url 'apps.health' %}"
-           class="{% if request.resolver_match.url_name == 'apps.health' %}active{% endif %}">
+        <a href="{% url 'apps.health:home' %}"
+           class="{% if request.resolver_match.url_name == 'apps.health:home' %}active{% endif %}">
             <i class="fa-solid fa-heart-pulse"></i> Saúde
         </a>
 

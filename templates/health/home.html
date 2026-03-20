@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h1 class="h2 fw-bold mb-1">Saúde & Fitness</h1>
+      <p class="text-muted mb-0">Teu painel geral. Sem coach quântico, só dado.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'apps.health:profile_update' %}" class="btn btn-outline-secondary">Editar perfil</a>
+      <a href="{% url 'apps.health:goal_create' %}" class="btn btn-outline-primary">Nova meta</a>
+      <a href="{% url 'apps.health:assessment_create' %}" class="btn btn-primary">Nova avaliação</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">Objetivo atual</div>
+          <div class="fs-5 fw-semibold mt-1">{{ profile.get_objetivo_display|default:"Não definido" }}</div>
+          <div class="small text-muted mt-2">Atividade: {{ profile.get_nivel_atividade_display|default:"-" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">Peso atual</div>
+          <div class="fs-4 fw-bold mt-1">
+            {% if latest_assessment %}
+              {{ latest_assessment.peso }} kg
+            {% else %}
+              --
+            {% endif %}
+          </div>
+          <div class="small mt-2 {% if peso_delta and peso_delta > 0 %}text-danger{% elif peso_delta is not None %}text-success{% else %}text-muted{% endif %}">
+            {% if peso_delta is not None %}
+              {% if peso_delta > 0 %}+{% endif %}{{ peso_delta }} kg vs avaliação anterior
+            {% else %}
+              Sem comparativo
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">% de gordura</div>
+          <div class="fs-4 fw-bold mt-1">
+            {% if latest_assessment and latest_assessment.percentual_gordura is not None %}
+              {{ latest_assessment.percentual_gordura }}%
+            {% else %}
+              --
+            {% endif %}
+          </div>
+          <div class="small mt-2 {% if gordura_delta and gordura_delta > 0 %}text-danger{% elif gordura_delta is not None %}text-success{% else %}text-muted{% endif %}">
+            {% if gordura_delta is not None %}
+              {% if gordura_delta > 0 %}+{% endif %}{{ gordura_delta }}% vs anterior
+            {% else %}
+              Sem comparativo
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">Total de avaliações</div>
+          <div class="fs-4 fw-bold mt-1">{{ total_assessments }}</div>
+          <div class="small text-muted mt-2">Histórico que presta, não memória de peixinho.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-xl-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Resumo da última avaliação</h2>
+            <a href="{% url 'apps.health:assessment_list' %}" class="btn btn-sm btn-light">Ver histórico</a>
+          </div>
+
+          {% if latest_assessment %}
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="text-muted small">IMC</div>
+                  <div class="fs-4 fw-bold">{{ latest_assessment.imc|default:"--" }}</div>
+                  <div class="small text-muted">{{ latest_assessment.classificacao_imc|default:"Sem classificação" }}</div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="text-muted small">Cintura</div>
+                  <div class="fs-4 fw-bold">{{ latest_assessment.cintura|default:"--" }}</div>
+                  <div class="small {% if cintura_delta and cintura_delta > 0 %}text-danger{% elif cintura_delta is not None %}text-success{% else %}text-muted{% endif %}">
+                    {% if cintura_delta is not None %}
+                      {% if cintura_delta > 0 %}+{% endif %}{{ cintura_delta }} cm vs anterior
+                    {% else %}
+                      Sem comparativo
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="text-muted small">Água / Sono</div>
+                  <div class="fw-semibold">{{ latest_assessment.consumo_agua_litros|default:"--" }} L</div>
+                  <div class="small text-muted">{{ latest_assessment.horas_sono|default:"--" }} h de sono</div>
+                </div>
+              </div>
+            </div>
+
+            {% if latest_assessment.metabolic_plan %}
+              <hr class="my-4">
+
+              <h3 class="h6 fw-bold mb-3">Plano metabólico atual</h3>
+
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="border rounded-3 p-3 h-100">
+                    <div class="text-muted small">TMB</div>
+                    <div class="fs-5 fw-bold">{{ latest_assessment.metabolic_plan.tmb|default:"--" }} kcal</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="border rounded-3 p-3 h-100">
+                    <div class="text-muted small">GET</div>
+                    <div class="fs-5 fw-bold">{{ latest_assessment.metabolic_plan.get|default:"--" }} kcal</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="border rounded-3 p-3 h-100">
+                    <div class="text-muted small">Meta calórica</div>
+                    <div class="fs-5 fw-bold">{{ latest_assessment.metabolic_plan.calorias_meta|default:"--" }} kcal</div>
+                    <div class="small text-muted">{{ latest_assessment.metabolic_plan.get_estrategia_calorica_display }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                  <div class="border rounded-3 p-3 h-100">
+                    <div class="text-muted small">Proteína</div>
+                    <div class="fs-6 fw-bold">{{ latest_assessment.metabolic_plan.proteina_g|default:"--" }} g</div>
+                    <div class="small text-muted">{{ latest_assessment.metabolic_plan.proteina_pct|default:"--" }}%</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="border rounded-3 p-3 h-100">
+                    <div class="text-muted small">Carboidrato</div>
+                    <div class="fs-6 fw-bold">{{ latest_assessment.metabolic_plan.carboidrato_g|default:"--" }} g</div>
+                    <div class="small text-muted">{{ latest_assessment.metabolic_plan.carboidrato_pct|default:"--" }}%</div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="border rounded-3 p-3 h-100">
+                    <div class="text-muted small">Gordura</div>
+                    <div class="fs-6 fw-bold">{{ latest_assessment.metabolic_plan.gordura_g|default:"--" }} g</div>
+                    <div class="small text-muted">{{ latest_assessment.metabolic_plan.gordura_pct|default:"--" }}%</div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="text-center py-5">
+              <h3 class="h5">Nenhuma avaliação cadastrada</h3>
+              <p class="text-muted">Sem dado, sem análise. O sistema não adivinha tua composição corporal no escuro.</p>
+              <a href="{% url 'apps.health:assessment_create' %}" class="btn btn-primary">Criar primeira avaliação</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Últimas avaliações</h2>
+            <a href="{% url 'apps.health:assessment_list' %}" class="btn btn-sm btn-light">Ver tudo</a>
+          </div>
+
+          {% if recent_assessments %}
+            <div class="table-responsive">
+              <table class="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Peso</th>
+                    <th>Gordura</th>
+                    <th>IMC</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in recent_assessments %}
+                    <tr>
+                      <td>{{ item.data_avaliacao|date:"d/m/Y" }}</td>
+                      <td>{{ item.peso }} kg</td>
+                      <td>
+                        {% if item.percentual_gordura is not None %}
+                          {{ item.percentual_gordura }}%
+                        {% else %}
+                          --
+                        {% endif %}
+                      </td>
+                      <td>{{ item.imc|default:"--" }}</td>
+                      <td class="text-end">
+                        <a href="{% url 'apps.health:assessment_detail' item.pk %}" class="btn btn-sm btn-outline-primary">Detalhes</a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">Sem avaliações recentes.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Metas ativas</h2>
+            <a href="{% url 'apps.health:goal_create' %}" class="btn btn-sm btn-primary">Nova</a>
+          </div>
+
+          {% if active_goals %}
+            <div class="d-flex flex-column gap-3">
+              {% for goal in active_goals %}
+                <div class="border rounded-3 p-3">
+                  <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div>
+                      <div class="fw-semibold">{{ goal.get_tipo_meta_display }}</div>
+                      <div class="small text-muted">Início: {{ goal.data_inicio|date:"d/m/Y" }}</div>
+                      {% if goal.data_limite %}
+                        <div class="small text-muted">Prazo: {{ goal.data_limite|date:"d/m/Y" }}</div>
+                      {% endif %}
+                    </div>
+                    <a href="{% url 'apps.health:goal_update' goal.pk %}" class="btn btn-sm btn-light">Editar</a>
+                  </div>
+
+                  <div class="mt-2 small">
+                    <span class="text-muted">Inicial:</span> {{ goal.valor_inicial|default:"--" }}
+                    <span class="mx-2">→</span>
+                    <span class="text-muted">Alvo:</span> {{ goal.valor_alvo }}
+                  </div>
+
+                  {% if goal.observacoes %}
+                    <div class="small text-muted mt-2">{{ goal.observacoes }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">Nenhuma meta ativa. Bora criar uma antes de largar isso igual muita gente larga dieta na terça.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Ações rápidas</h2>
+          <div class="d-grid gap-2">
+            <a href="{% url 'apps.health:assessment_create' %}" class="btn btn-primary">Registrar avaliação</a>
+            <a href="{% url 'apps.health:goal_create' %}" class="btn btn-outline-primary">Criar meta</a>
+            <a href="{% url 'apps.health:profile_update' %}" class="btn btn-outline-secondary">Atualizar perfil</a>
+            <a href="{% url 'apps.health:assessment_list' %}" class="btn btn-light">Ver histórico</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Histórico de avaliações</h1>
+      <p class="text-muted mb-0">Agora sim dá pra ver evolução. Ou encarar a verdade, que também faz parte.</p>
+    </div>
+    <a href="{% url 'apps.health:assessment_create' %}" class="btn btn-primary">Nova avaliação</a>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      {% if assessments %}
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Peso</th>
+                <th>% Gordura</th>
+                <th>IMC</th>
+                <th>Meta calórica</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in assessments %}
+                <tr>
+                  <td>{{ item.data_avaliacao|date:"d/m/Y" }}</td>
+                  <td>{{ item.peso }} kg</td>
+                  <td>
+                    {% if item.percentual_gordura is not None %}
+                      {{ item.percentual_gordura }}%
+                    {% else %}
+                      --
+                    {% endif %}
+                  </td>
+                  <td>{{ item.imc|default:"--" }}</td>
+                  <td>
+                    {% if item.metabolic_plan %}
+                      {{ item.metabolic_plan.calorias_meta|default:"--" }} kcal
+                    {% else %}
+                      --
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    <div class="d-flex justify-content-end gap-2">
+                      <a href="{% url 'apps.health:assessment_detail' item.pk %}" class="btn btn-sm btn-outline-primary">Detalhes</a>
+                      <a href="{% url 'apps.health:assessment_update' item.pk %}" class="btn btn-sm btn-light">Editar</a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <h2 class="h5">Sem avaliações cadastradas</h2>
+          <p class="text-muted">Começa pela primeira. Sem histórico, teu dashboard é só decoração.</p>
+          <a href="{% url 'apps.health:assessment_create' %}" class="btn btn-primary">Criar avaliação</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

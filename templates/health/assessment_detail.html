@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Avaliação de {{ assessment.data_avaliacao|date:"d/m/Y" }}</h1>
+      <p class="text-muted mb-0">Detalhes completos da avaliação física.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'apps.health:assessment_list' %}" class="btn btn-light">Voltar</a>
+      <a href="{% url 'apps.health:assessment_update' assessment.pk %}" class="btn btn-primary">Editar</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Dados físicos</h2>
+          <div class="row g-3">
+            <div class="col-md-4"><strong>Peso:</strong><br>{{ assessment.peso }} kg</div>
+            <div class="col-md-4"><strong>Altura:</strong><br>{{ assessment.altura }} m</div>
+            <div class="col-md-4"><strong>Idade:</strong><br>{{ assessment.idade_no_momento|default:"--" }}</div>
+            <div class="col-md-4"><strong>IMC:</strong><br>{{ assessment.imc|default:"--" }}</div>
+            <div class="col-md-4"><strong>Classificação:</strong><br>{{ assessment.classificacao_imc|default:"--" }}</div>
+            <div class="col-md-4"><strong>% Gordura:</strong><br>
+              {% if assessment.percentual_gordura is not None %}{{ assessment.percentual_gordura }}%{% else %}--{% endif %}
+            </div>
+            <div class="col-md-4"><strong>Massa gorda:</strong><br>{{ assessment.massa_gorda|default:"--" }}</div>
+            <div class="col-md-4"><strong>Massa magra:</strong><br>{{ assessment.massa_magra|default:"--" }}</div>
+            <div class="col-md-4"><strong>Pressão:</strong><br>{{ assessment.pressao_arterial|default:"--" }}</div>
+            <div class="col-md-4"><strong>FC:</strong><br>{{ assessment.frequencia_cardiaca|default:"--" }}</div>
+            <div class="col-md-4"><strong>Sono:</strong><br>{{ assessment.horas_sono|default:"--" }} h</div>
+            <div class="col-md-4"><strong>Água:</strong><br>{{ assessment.consumo_agua_litros|default:"--" }} L</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Medidas corporais</h2>
+          <div class="row g-3 small">
+            <div class="col-md-3"><strong>Pescoço:</strong><br>{{ assessment.pescoco|default:"--" }}</div>
+            <div class="col-md-3"><strong>Ombro:</strong><br>{{ assessment.ombro|default:"--" }}</div>
+            <div class="col-md-3"><strong>Tórax:</strong><br>{{ assessment.torax|default:"--" }}</div>
+            <div class="col-md-3"><strong>Cintura:</strong><br>{{ assessment.cintura|default:"--" }}</div>
+            <div class="col-md-3"><strong>Abdômen:</strong><br>{{ assessment.abdomen|default:"--" }}</div>
+            <div class="col-md-3"><strong>Quadril:</strong><br>{{ assessment.quadril|default:"--" }}</div>
+            <div class="col-md-3"><strong>Braço dir.:</strong><br>{{ assessment.braco_direito|default:"--" }}</div>
+            <div class="col-md-3"><strong>Braço esq.:</strong><br>{{ assessment.braco_esquerdo|default:"--" }}</div>
+            <div class="col-md-3"><strong>Antebraço dir.:</strong><br>{{ assessment.antebraco_direito|default:"--" }}</div>
+            <div class="col-md-3"><strong>Antebraço esq.:</strong><br>{{ assessment.antebraco_esquerdo|default:"--" }}</div>
+            <div class="col-md-3"><strong>Coxa dir.:</strong><br>{{ assessment.coxa_direita|default:"--" }}</div>
+            <div class="col-md-3"><strong>Coxa esq.:</strong><br>{{ assessment.coxa_esquerda|default:"--" }}</div>
+            <div class="col-md-3"><strong>Panturrilha dir.:</strong><br>{{ assessment.panturrilha_direita|default:"--" }}</div>
+            <div class="col-md-3"><strong>Panturrilha esq.:</strong><br>{{ assessment.panturrilha_esquerda|default:"--" }}</div>
+          </div>
+
+          {% if assessment.observacoes %}
+            <hr>
+            <h3 class="h6">Observações</h3>
+            <p class="mb-0 text-muted">{{ assessment.observacoes }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h2 class="h5 mb-3">Plano metabólico</h2>
+
+          {% if assessment.metabolic_plan %}
+            <div class="small text-muted mb-2">Estratégia</div>
+            <div class="fw-semibold mb-3">{{ assessment.metabolic_plan.get_estrategia_calorica_display }}</div>
+
+            <div class="border rounded-3 p-3 mb-3">
+              <div class="small text-muted">TMB</div>
+              <div class="fs-5 fw-bold">{{ assessment.metabolic_plan.tmb|default:"--" }} kcal</div>
+            </div>
+
+            <div class="border rounded-3 p-3 mb-3">
+              <div class="small text-muted">GET</div>
+              <div class="fs-5 fw-bold">{{ assessment.metabolic_plan.get|default:"--" }} kcal</div>
+            </div>
+
+            <div class="border rounded-3 p-3 mb-3">
+              <div class="small text-muted">Meta calórica</div>
+              <div class="fs-5 fw-bold">{{ assessment.metabolic_plan.calorias_meta|default:"--" }} kcal</div>
+            </div>
+
+            <div class="border rounded-3 p-3 mb-2">
+              <div><strong>Proteína:</strong> {{ assessment.metabolic_plan.proteina_g|default:"--" }} g</div>
+              <div><strong>Carboidrato:</strong> {{ assessment.metabolic_plan.carboidrato_g|default:"--" }} g</div>
+              <div><strong>Gordura:</strong> {{ assessment.metabolic_plan.gordura_g|default:"--" }} g</div>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">Sem plano metabólico. Normalmente isso acontece quando o perfil base tá incompleto.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
