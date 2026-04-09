@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Check-ins diários</h1>
+            <p class="text-muted mb-0">Acompanhe hábitos, rotina e consistência.</p>
+        </div>
+        <a href="{% url 'apps.health:daily_checkin_create' %}" class="btn btn-primary">
+            Novo check-in
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            {% if checkins %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data</th>
+                                <th>Peso</th>
+                                <th>Sono</th>
+                                <th>Água</th>
+                                <th>Treino</th>
+                                <th>Passos</th>
+                                <th>Dieta</th>
+                                <th>Score</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in checkins %}
+                                <tr>
+                                    <td>{{ item.data|date:"d/m/Y" }}</td>
+                                    <td>{% if item.peso %}{{ item.peso }} kg{% else %}-{% endif %}</td>
+                                    <td>{% if item.horas_sono %}{{ item.horas_sono }} h{% else %}-{% endif %}</td>
+                                    <td>{% if item.consumo_agua_litros %}{{ item.consumo_agua_litros }} L{% else %}-{% endif %}</td>
+                                    <td>
+                                        {% if item.treinou %}
+                                            Sim{% if item.minutos_treino %} ({{ item.minutos_treino }} min){% endif %}
+                                        {% else %}
+                                            Não
+                                        {% endif %}
+                                    </td>
+                                    <td>{% if item.passos %}{{ item.passos }}{% else %}-{% endif %}</td>
+                                    <td>{% if item.aderencia_dieta != None %}{{ item.aderencia_dieta }}%{% else %}-{% endif %}</td>
+                                    <td>{{ item.lifestyle_score }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'apps.health:daily_checkin_update' item.pk %}" class="btn btn-sm btn-outline-secondary">
+                                            Editar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% if item.observacoes %}
+                                    <tr>
+                                        <td colspan="9" class="bg-light small">
+                                            <span class="text-muted">Obs.:</span> {{ item.observacoes }}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-5 text-center text-muted">
+                    Nenhum check-in registrado ainda.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

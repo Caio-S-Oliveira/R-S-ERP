@@ -1,7 +1,5 @@
 from django import forms
-
-from .models import FitnessGoal, FitnessProfile, PhysicalAssessment
-
+from .models import FitnessGoal, FitnessProfile, PhysicalAssessment, DailyCheckin
 
 INPUT_CLASS = "form-control"
 SELECT_CLASS = "form-select"
@@ -78,3 +76,45 @@ class FitnessGoalForm(forms.ModelForm):
             "status": forms.Select(attrs={"class": SELECT_CLASS}),
             "observacoes": forms.Textarea(attrs={"class": TEXTAREA_CLASS, "rows": 3}),
         }
+
+class DailyCheckinForm(forms.ModelForm):
+    class Meta:
+        model = DailyCheckin
+        fields = [
+            "data",
+            "peso",
+            "horas_sono",
+            "consumo_agua_litros",
+            "treinou",
+            "minutos_treino",
+            "passos",
+            "aderencia_dieta",
+            "humor",
+            "energia",
+            "observacoes",
+        ]
+        widgets = {
+            "data": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "peso": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "0.00"}),
+            "horas_sono": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "0.00"}),
+            "consumo_agua_litros": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "placeholder": "0.00"}),
+            "treinou": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "minutos_treino": forms.NumberInput(attrs={"class": "form-control", "placeholder": "0"}),
+            "passos": forms.NumberInput(attrs={"class": "form-control", "placeholder": "0"}),
+            "aderencia_dieta": forms.NumberInput(attrs={"class": "form-control", "min": "0", "max": "100", "placeholder": "0 a 100"}),
+            "humor": forms.Select(attrs={"class": "form-select"}),
+            "energia": forms.Select(attrs={"class": "form-select"}),
+            "observacoes": forms.Textarea(attrs={"class": "form-control", "rows": 4, "placeholder": "Observações do dia"}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        treinou = cleaned_data.get("treinou")
+        minutos_treino = cleaned_data.get("minutos_treino")
+
+        if not treinou:
+            cleaned_data["minutos_treino"] = None
+        elif treinou and not minutos_treino:
+            self.add_error("minutos_treino", "Informe os minutos de treino.")
+
+        return cleaned_data

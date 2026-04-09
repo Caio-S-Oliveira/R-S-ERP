@@ -29,6 +29,7 @@ class ShoppingItemForm(forms.ModelForm):
             "quantity",
             "desired_price",
             "current_price",
+            "bought_price",
             "priority",
             "status",
             "notes",
@@ -61,6 +62,11 @@ class ShoppingItemForm(forms.ModelForm):
                 "step": "0.01",
                 "placeholder": "0.00"
             }),
+            "bought_price": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "placeholder": "0.00"
+            }),
             "priority": forms.Select(attrs={"class": "form-select"}),
             "status": forms.Select(attrs={"class": "form-select"}),
             "notes": forms.Textarea(attrs={
@@ -69,3 +75,33 @@ class ShoppingItemForm(forms.ModelForm):
                 "placeholder": "Observações"
             }),
         }
+
+    def clean_quantity(self):
+        quantity = self.cleaned_data.get("quantity")
+        if quantity is not None and quantity < 1:
+            raise forms.ValidationError("A quantidade deve ser no mínimo 1.")
+        return quantity
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        desired_price = cleaned_data.get("desired_price")
+        current_price = cleaned_data.get("current_price")
+        bought_price = cleaned_data.get("bought_price")
+        status = cleaned_data.get("status")
+
+        for field_name, value in {
+            "desired_price": desired_price,
+            "current_price": current_price,
+            "bought_price": bought_price,
+        }.items():
+            if value is not None and value < 0:
+                self.add_error(field_name, "O valor não pode ser negativo.")
+
+        if status == "bought" and not bought_price and not current_price and not desired_price:
+            raise forms.ValidationError(
+                "Para marcar como comprado, informe pelo menos um valor "
+                "(comprado, atual ou desejado)."
+            )
+
+        return cleaned_data

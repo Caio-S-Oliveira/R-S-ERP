@@ -1,25 +1,32 @@
+import uuid
+
+from django.conf import settings
 from django.db import models
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-
-User = get_user_model()
 
 
-class Category(models.Model):
-    INCOME = "income"
-    EXPENSE = "expense"
+class BaseOwnedModel(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="%(class)ss"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        abstract = True
+
+
+class Category(BaseOwnedModel):
     TYPE_CHOICES = (
-        (INCOME, "Receita"),
-        (EXPENSE, "Despesa"),
+        ("income", "Receita"),
+        ("expense", "Despesa"),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="finance_categories")
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    color = models.CharField(max_length=7, blank=True)
-    icon = models.CharField(max_length=50, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    color = models.CharField(max_length=20, blank=True, default="#0d6efd")
+    icon = models.CharField(max_length=50, blank=True, default="")
 
     class Meta:
         ordering = ["name"]
@@ -29,11 +36,9 @@ class Category(models.Model):
         return self.name
 
 
-class Account(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="finance_accounts")
+class Account(BaseOwnedModel):
     name = models.CharField(max_length=100)
-    initial_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    initial_balance = models.DecimalField(max_digits=14, decimal_places=2, default=0)
 
     class Meta:
         ordering = ["name"]
@@ -43,9 +48,8 @@ class Account(models.Model):
         return self.name
 
 
-class Tag(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="finance_tags")
-    name = models.CharField(max_length=50)
+class Tag(BaseOwnedModel):
+    name = models.CharField(max_length=60)
 
     class Meta:
         ordering = ["name"]
@@ -55,35 +59,79 @@ class Tag(models.Model):
         return self.name
 
 
-class Transaction(models.Model):
-    INCOME = "income"
-    EXPENSE = "expense"
-
+class Transaction(BaseOwnedModel):
     TYPE_CHOICES = (
-        (INCOME, "Receita"),
-        (EXPENSE, "Despesa"),
+        ("income", "Receita"),
+        ("expense", "Despesa"),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="finance_transactions")
-    description = models.CharField(max_length=255)
+    SCHEDULE_TYPE_CHOICES = (
+        ("single", "Lançamento único"),
+        ("installment", "Parcelado"),
+        ("recurring", "Recorrente"),
+    )
+
+    RECURRENCE_FREQUENCY_CHOICES = (
+        ("monthly", "Mensal"),
+        ("yearly", "Anual"),
+    )
+
     type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="transactions")
-    account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="transactions")
+    description = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        related_name="transactions"
+    )
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name="transactions"
+    )
     tags = models.ManyToManyField(Tag, blank=True, related_name="transactions")
     date = models.DateField()
-    notes = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    notes = models.TextField(blank=True, default="")
+
+    is_paid = models.BooleanField(default=True)
+
+    schedule_type = models.CharField(
+        max_length=20,
+        choices=SCHEDULE_TYPE_CHOICES,
+        default="single"
+    )
+    recurrence_frequency = models.CharField(
+        max_length=20,
+        choices=RECURRENCE_FREQUENCY_CHOICES,
+        blank=True,
+        default=""
+    )
+
+    series_group = models.UUIDField(
+        null=True,
+        blank=True,
+        db_index=True,
+        editable=False
+    )
+    series_position = models.PositiveIntegerField(default=1)
+    series_total = models.PositiveIntegerField(default=1)
 
     class Meta:
         ordering = ["-date", "-created_at"]
 
-    def clean(self):
-        if self.category_id and self.category.type != self.type:
-            raise ValidationError({
-                "category": "A categoria deve ter o mesmo tipo da transação."
-            })
-
     def __str__(self):
-        return f"{self.description} - {self.amount}"
+        return self.description
+
+    @property
+    def is_series(self):
+        return bool(self.series_group)
+
+    @property
+    def series_label(self):
+        if self.series_total and self.series_total > 1:
+            return f"{self.series_position}/{self.series_total}"
+        return ""
+
+    @property
+    def schedule_label(self):
+        return dict(self.SCHEDULE_TYPE_CHOICES).get(self.schedule_type, self.schedule_type)

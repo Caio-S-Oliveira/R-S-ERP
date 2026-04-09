@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">{{ page_title }}</h1>
+        <p class="text-muted mb-0">Registre seus hábitos e sinais do dia.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Data</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}<div class="text-danger small">{{ form.data.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Peso</label>
+                        {{ form.peso }}
+                        {% if form.peso.errors %}<div class="text-danger small">{{ form.peso.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Horas de sono</label>
+                        {{ form.horas_sono }}
+                        {% if form.horas_sono.errors %}<div class="text-danger small">{{ form.horas_sono.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Água (L)</label>
+                        {{ form.consumo_agua_litros }}
+                        {% if form.consumo_agua_litros.errors %}<div class="text-danger small">{{ form.consumo_agua_litros.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-check mt-4 pt-2">
+                            {{ form.treinou }}
+                            <label class="form-check-label" for="{{ form.treinou.id_for_label }}">
+                                Treinou hoje
+                            </label>
+                        </div>
+                        {% if form.treinou.errors %}<div class="text-danger small">{{ form.treinou.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Minutos de treino</label>
+                        {{ form.minutos_treino }}
+                        {% if form.minutos_treino.errors %}<div class="text-danger small">{{ form.minutos_treino.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Passos</label>
+                        {{ form.passos }}
+                        {% if form.passos.errors %}<div class="text-danger small">{{ form.passos.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Aderência da dieta (%)</label>
+                        {{ form.aderencia_dieta }}
+                        {% if form.aderencia_dieta.errors %}<div class="text-danger small">{{ form.aderencia_dieta.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Humor</label>
+                        {{ form.humor }}
+                        {% if form.humor.errors %}<div class="text-danger small">{{ form.humor.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Energia</label>
+                        {{ form.energia }}
+                        {% if form.energia.errors %}<div class="text-danger small">{{ form.energia.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Observações</label>
+                        {{ form.observacoes }}
+                        {% if form.observacoes.errors %}<div class="text-danger small">{{ form.observacoes.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <a href="{% url 'apps.health:daily_checkin_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

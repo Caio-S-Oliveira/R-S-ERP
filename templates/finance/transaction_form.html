@@ -3,28 +3,44 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h1 class="h3 mb-1">{{ page_title }}</h1>
-            <p class="text-muted mb-0">Cadastre uma nova receita ou despesa.</p>
+            <p class="text-muted mb-0">
+                {% if is_edit_mode %}
+                    Atualize os dados da transação.
+                {% else %}
+                    Cadastre uma nova receita ou despesa.
+                {% endif %}
+            </p>
         </div>
-        <a href="{% url 'finance_home' %}" class="btn btn-outline-secondary">
+        <a href="{% url 'finance_home' %}" class="btn btn-outline-secondary rounded-3">
             Voltar
         </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4">
-            <form method="post" novalidate>
+            <form method="post" novalidate id="transactionForm">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger rounded-3">
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
 
                 <div class="row g-3">
+                    {% if not is_edit_mode %}
+                        <div class="col-md-4">
+                            <label for="{{ form.transaction_mode.id_for_label }}" class="form-label">Modo de lançamento</label>
+                            {{ form.transaction_mode }}
+                            {% if form.transaction_mode.errors %}
+                                <div class="text-danger small mt-1">{{ form.transaction_mode.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
                     <div class="col-md-4">
                         <label for="{{ form.type.id_for_label }}" class="form-label">Tipo</label>
                         {{ form.type }}
@@ -33,19 +49,19 @@
                         {% endif %}
                     </div>
 
-                    <div class="col-md-8">
-                        <label for="{{ form.description.id_for_label }}" class="form-label">Descrição</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
-                        {% endif %}
-                    </div>
-
                     <div class="col-md-4">
                         <label for="{{ form.amount.id_for_label }}" class="form-label">Valor</label>
                         {{ form.amount }}
                         {% if form.amount.errors %}
                             <div class="text-danger small mt-1">{{ form.amount.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-8">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Descrição</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -73,13 +89,58 @@
                         {% endif %}
                     </div>
 
-                    <div class="col-md-8">
+                    {% if not is_edit_mode %}
+                        <div class="col-md-4 mode-block" id="installmentsBlock" style="display: none;">
+                            <label for="{{ form.installments.id_for_label }}" class="form-label">Parcelas</label>
+                            {{ form.installments }}
+                            <div class="form-text">Para parcelado, informe 2 ou mais.</div>
+                            {% if form.installments.errors %}
+                                <div class="text-danger small mt-1">{{ form.installments.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-4 mode-block" id="recurrenceCountBlock" style="display: none;">
+                            <label for="{{ form.recurrence_count.id_for_label }}" class="form-label">Quantidade de repetições</label>
+                            {{ form.recurrence_count }}
+                            <div class="form-text">Para recorrência, informe 2 ou mais.</div>
+                            {% if form.recurrence_count.errors %}
+                                <div class="text-danger small mt-1">{{ form.recurrence_count.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-4 mode-block" id="recurrenceFrequencyBlock" style="display: none;">
+                            <label for="{{ form.recurrence_frequency.id_for_label }}" class="form-label">Frequência</label>
+                            {{ form.recurrence_frequency }}
+                            {% if form.recurrence_frequency.errors %}
+                                <div class="text-danger small mt-1">{{ form.recurrence_frequency.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="col-md-4">
                         <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
                         {{ form.tags }}
                         {% if form.tags.errors %}
                             <div class="text-danger small mt-1">{{ form.tags.errors }}</div>
                         {% endif %}
                     </div>
+
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            {{ form.is_paid }}
+                            <label class="form-check-label ms-2" for="{{ form.is_paid.id_for_label }}">
+                                Marcar como já pago/recebido
+                            </label>
+                        </div>
+                    </div>
+
+                    {% if not is_edit_mode %}
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="w-100 small text-muted bg-light rounded-3 p-3 border">
+                                Parcelas e lançamentos futuros serão criados automaticamente. Os futuros ficam como <strong>não pagos</strong> por padrão.
+                            </div>
+                        </div>
+                    {% endif %}
 
                     <div class="col-12">
                         <label for="{{ form.notes.id_for_label }}" class="form-label">Observações</label>
@@ -88,13 +149,22 @@
                             <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
                         {% endif %}
                     </div>
+
+                    {% if is_edit_mode and transaction_object.series_group %}
+                        <div class="col-12">
+                            <div class="alert alert-warning rounded-3 mb-0">
+                                Esta transação faz parte de uma série <strong>{{ transaction_object.schedule_label }}</strong>.
+                                A edição aqui altera apenas este lançamento. Misericórdia, sem editar tudo em lote por enquanto.
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="{% url 'finance_home' %}" class="btn btn-light">
+                    <a href="{% url 'finance_home' %}" class="btn btn-light rounded-3">
                         Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary rounded-3">
                         Salvar transação
                     </button>
                 </div>
@@ -102,4 +172,30 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not is_edit_mode %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modeField = document.getElementById("id_transaction_mode");
+        const installmentsBlock = document.getElementById("installmentsBlock");
+        const recurrenceCountBlock = document.getElementById("recurrenceCountBlock");
+        const recurrenceFrequencyBlock = document.getElementById("recurrenceFrequencyBlock");
+
+        function updateModeFields() {
+            const mode = modeField ? modeField.value : "single";
+
+            if (installmentsBlock) installmentsBlock.style.display = mode === "installment" ? "" : "none";
+            if (recurrenceCountBlock) recurrenceCountBlock.style.display = mode === "recurring" ? "" : "none";
+            if (recurrenceFrequencyBlock) recurrenceFrequencyBlock.style.display = mode === "recurring" ? "" : "none";
+        }
+
+        if (modeField) {
+            modeField.addEventListener("change", updateModeFields);
+            updateModeFields();
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}

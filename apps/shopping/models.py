@@ -3,11 +3,15 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class ShoppingList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="shopping_lists")
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "name"]
 
     def __str__(self):
         return self.name
@@ -51,10 +55,44 @@ class ShoppingItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     desired_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     current_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    bought_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    bought_at = models.DateTimeField(null=True, blank=True)
+
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default="medium")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="wanted")
     notes = models.TextField(blank=True)
+
+    financial_transaction_created = models.BooleanField(default=False)
+    financial_transaction = models.ForeignKey(
+        "finance.Transaction",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="shopping_items"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
 
     def __str__(self):
         return self.name
+
+    @property
+    def desired_total(self):
+        if self.desired_price is None:
+            return None
+        return self.desired_price * self.quantity
+
+    @property
+    def current_total(self):
+        if self.current_price is None:
+            return None
+        return self.current_price * self.quantity
+
+    @property
+    def bought_total(self):
+        if self.bought_price is None:
+            return None
+        return self.bought_price * self.quantity
